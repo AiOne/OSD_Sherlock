@@ -23,6 +23,8 @@ from result import QueryStatus
 from result import QueryResult
 from notify import QueryNotifyPrint
 from sites  import SitesInformation
+from qr_changer import QR_Converter
+from archiver import Archiver
 
 module_name = "Sherlock: Find Usernames Across Social Networks"
 __version__ = "0.12.9"
@@ -192,10 +194,9 @@ def sherlock(username, site_data, query_notify,
 
         # Results from analysis of this specific site
         results_site = {}
-
         # Record URL of main site
         results_site['url_main'] = net_info.get("urlMain")
-
+ 
         # A user agent is needed because some sites don't return the correct
         # information since they think that we are bots (Which we actually are...)
         headers = {
@@ -380,16 +381,20 @@ def sherlock(username, site_data, query_notify,
 
         #Notify caller about results of query.
         query_notify.update(result)
+        
 
         # Save status of request
+        results_site['site_name'] = result.site_name
         results_site['status'] = result
 
         # Save results from request
         results_site['http_status'] = http_status
         results_site['response_text'] = response_text
 
+
         # Add this site's results into final dictionary with all of the other results.
         results_total[social_network] = results_site
+        # results_total['site_name'] = result.site_name
 
     #Notify caller that all queries are finished.
     query_notify.finish()
@@ -460,6 +465,30 @@ def main():
                         dest="site_list", default=None,
                         help="Limit analysis to just the listed sites. Add multiple options to specify more than one site."
                         )
+    parser.add_argument("--socialsite",
+                        action="store_true",
+                        dest="social_site", default=False,
+                        help="Only search for the most used social media site."
+                        )
+    parser.add_argument("--qrcode",
+                        action="store_true",
+                        dest="qr_code", default=False,
+                        help="Convert the found links to QR Code with respective name."
+                        )
+    parser.add_argument("--zip",
+                        action="store_true",
+                        dest="zip", default=False,
+                        help="Zip the output file along site with the output folder."
+                        )
+
+    parser.add_argument("--zip-only",
+                        action="store_true",
+                        dest="zip_only", default=False,
+                        help="Zip the output folder and withoud output folders"
+                        )
+
+
+
     parser.add_argument("--proxy", "-p", metavar='PROXY_URL',
                         action="store", dest="proxy", default=None,
                         help="Make requests over a proxy. e.g. socks5://127.0.0.1:1080"
@@ -509,7 +538,7 @@ def main():
         remote_version = str(re.findall('__version__ = "(.*)"', r.text)[0])
         local_version = __version__
 
-        if remote_version != local_version:
+        if remote_version != local_version: 
             print("Update Available!\n" +
                   f"You are running version {local_version}. Version {remote_version} is available at https://git.io/sherlock")
 
@@ -558,14 +587,26 @@ def main():
     for site in sites:
         site_data_all[site.name] = site.information
 
+
     if args.site_list is None:
         # Not desired to look at a sub-set of sites
-        site_data = site_data_all
+        if args.social_site:
+            social_site = ['instagram', 'facebook', 'twitter', 'steam']
+            site_data = {}
+            for site in social_site:
+                for existing_site in site_data_all:
+                  if site.lower() == existing_site.lower():
+                        site_data[existing_site] = site_data_all[existing_site]
+        else:
+            site_data = site_data_all
+        
     else:
+  
         # User desires to selectively run queries on a sub-set of the site list.
 
         # Make sure that the sites are supported & build up pruned site database.
         site_data = {}
+
         site_missing = []
         for site in args.site_list:
             counter = 0
@@ -605,18 +646,55 @@ def main():
             # The usernames results should be stored in a targeted folder.
             # If the folder doesn't exist, create it first
             os.makedirs(args.folderoutput, exist_ok=True)
+            
             result_file = os.path.join(args.folderoutput, f"{username}.txt")
         else:
-            result_file = f"{username}.txt"
+            try:
+                os.mkdir(username)
+            except:
+                pass
+
+            result_file = f"{username}/{username}.txt"
+
+
 
         with open(result_file, "w", encoding="utf-8") as file:
             exists_counter = 0
             for website_name in results:
                 dictionary = results[website_name]
+
                 if dictionary.get("status").status == QueryStatus.CLAIMED:
                     exists_counter += 1
                     file.write(dictionary["url_user"] + "\n")
+
+        
             file.write(f"Total Websites Username Detected On : {exists_counter}\n")
+
+        website_info  = []
+        for result in results:
+            dictionary = results[result]
+            
+            if dictionary.get("status").status == QueryStatus.CLAIMED:
+                # print(dictionary['url_user'])
+                # print(dictionary['site_name'])
+                site_info = {'url' : dictionary['url_user'], 'site_name': dictionary['site_name']}
+
+                website_info.append([site_info])
+
+        # print(website_info)
+
+        if args.qr_code:
+            a = QR_Converter(username, username, website_info)
+            a.convert_qr()
+
+
+        archiver = Archiver(username)
+        if args.zip:
+            archiver.archive_zip()
+        if args.zip_only:
+            archiver.archive_zip_only()
+
+
 
         if args.csv:
             with open(username + ".csv", "w", newline='', encoding="utf-8") as csv_report:
