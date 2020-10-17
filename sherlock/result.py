@@ -64,7 +64,7 @@ class QueryResult():
         self.username      = username
         self.site_name     = site_name
         self.site_url_user = site_url_user
-        self.status        = status
+        self.status        = status1
         self.query_time    = query_time
         self.context       = context
 
