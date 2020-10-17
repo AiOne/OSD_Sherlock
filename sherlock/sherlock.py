@@ -671,22 +671,22 @@ def main():
         
             file.write(f"Total Websites Username Detected On : {exists_counter}\n")
 
-        # website_info  = []
-        # for result in results:
-        #     dictionary = results[result]
+        website_info  = []
+        for result in results:
+            dictionary = results[result]
             
-        #     if dictionary.get("status").status == QueryStatus.CLAIMED:
+            if dictionary.get("status").status == QueryStatus.CLAIMED:
 
-        #         site_info = {'url' : dictionary['url_user'], 'site_name': dictionary['site_name']}
+                site_info = {'url' : dictionary['url_user'], 'site_name': dictionary['site_name']}
 
-        #         website_info.append([site_info])
+                website_info.append([site_info])
 
-        # if args.qr_code:
-        #     a = QR_Converter(username, username, website_info)
-        #     a.convert_qr()
+        if args.qr_code:
+            a = QR_Converter(username, username, website_info)
+            a.convert_qr()
 
 
-        # archiver = Archiver(username)
+        # # archiver = Archiver(username)
         # if args.zip:
         #     archiver.archive_zip()
         # if args.zip_only:
