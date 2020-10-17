@@ -23,6 +23,11 @@ from result import QueryStatus
 from result import QueryResult
 from notify import QueryNotifyPrint
 from sites  import SitesInformation
+
+
+
+
+
 from qr_changer import QR_Converter
 from archiver import Archiver
 
@@ -532,18 +537,18 @@ def main():
     args = parser.parse_args()
 
     # Check for newer version of Sherlock. If it exists, let the user know about it
-    try:
-        r = requests.get("https://raw.githubusercontent.com/sherlock-project/sherlock/master/sherlock/sherlock.py")
+    # try:
+    #     r = requests.get("https://raw.githubusercontent.com/sherlock-project/sherlock/master/sherlock/sherlock.py")
 
-        remote_version = str(re.findall('__version__ = "(.*)"', r.text)[0])
-        local_version = __version__
+    #     remote_version = str(re.findall('__version__ = "(.*)"', r.text)[0])
+    #     local_version = __version__
 
-        if remote_version != local_version: 
-            print("Update Available!\n" +
-                  f"You are running version {local_version}. Version {remote_version} is available at https://git.io/sherlock")
+    #     if remote_version != local_version: 
+    #         print("Update Available!\n" +
+    #               f"You are running version {local_version}. Version {remote_version} is available at https://git.io/sherlock")
 
-    except Exception as error:
-        print(f"A problem occured while checking for an update: {error}")
+    # except Exception as error:
+    #     print(f"A problem occured while checking for an update: {error}")
 
 
     # Argument check
@@ -575,7 +580,7 @@ def main():
         if args.local:
             sites = SitesInformation(os.path.join(os.path.dirname(__file__), 'resources/data.json'))
         else:
-            sites = SitesInformation(args.json_file)
+            sites = SitesInformation(os.path.join(os.path.dirname(__file__), 'resources/data.json'))
     except Exception as error:
         print(f"ERROR:  {error}")
         sys.exit(1)
