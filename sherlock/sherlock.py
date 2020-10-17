@@ -649,11 +649,11 @@ def main():
             
             result_file = os.path.join(args.folderoutput, f"{username}.txt")
         else:
-            # cmm
-            # try:
-            #     os.mkdir(username)
-            # except:
-            #     pass
+            
+            try:
+                os.mkdir(username)
+            except:
+                pass
 
             result_file = f"{username}/{username}.txt"
 
