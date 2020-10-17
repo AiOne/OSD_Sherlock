@@ -686,11 +686,11 @@ def main():
             a.convert_qr()
 
 
-        # # archiver = Archiver(username)
-        # if args.zip:
-        #     archiver.archive_zip()
-        # if args.zip_only:
-        #     archiver.archive_zip_only()
+        # archiver = Archiver(username)
+        if args.zip:
+            archiver.archive_zip()
+        if args.zip_only:
+            archiver.archive_zip_only()
 
 
 
